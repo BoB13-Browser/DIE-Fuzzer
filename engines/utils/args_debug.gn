@@ -11,4 +11,5 @@ v8_enable_fast_mksnapshot = true
 v8_optimized_debug = false
 is_asan = true
 is_component_build = false
+clang_use_chrome_plugins = false
 target_cpu = "x64"

@@ -16,7 +16,6 @@ else
 fi
 
 tmux new-session -s corpus -d \
-        "./fuzz/scripts/run-all.py -- ./fuzz/afl/afl-fuzz -m none -o output \
+        "./fuzz/scripts/run-all.py -- ./fuzz/afl/afl-fuzz -m none -t 10000 -o output \
         -i ./corpus/output \
         "$1" ${libs} @@"
-

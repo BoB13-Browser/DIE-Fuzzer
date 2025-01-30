@@ -5,26 +5,18 @@ import os
 
 ROOT = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
 AFL_ROOT = os.path.join(ROOT, "../../fuzz/afl")
-this_is_chakra = False
+
 this_is_v8 = True
-
+this_is_jsc = False
 def find_engine(cmdline):
-    #global this_is_chakra
-    if this_is_chakra :
-        return "CH"
-    if this_is_v8 :
+    if this_is_v8:
         return "V8"
-    for arg in cmdline:
-        if "JavaScriptCore" in arg:
-            return "JSC"
-        if "chakracore" in arg :
-            return "CH"
-        if "third_party" in arg:
-            return "V8"
-
+    if this_is_jsc:
+        return "JSC"
     return None
 
 def is_target_jsc(cmdline):
+    return True
     SIGNATURES = ["b3", "dfg", "jit", "domjit", "ftl", "bytecode", "bytecompiler", "llint"]
 
     # JSC unified multiple sources into one and compile them together.
@@ -45,17 +37,6 @@ def is_target_jsc(cmdline):
     # If we compile a binary
     return True
 
-def is_target_ch(cmdline) :
-    for i in range(len(cmdline) - 1):
-        if cmdline[i] != '-c':
-            continue
-
-        source_path = cmdline[i + 1]   
-        if "Runtime/Base/ThreadContext.cpp" in source_path :
-            return False
-    return True
-
-
 def is_target(cmdline):
     engine = find_engine(cmdline)
 
@@ -63,10 +44,9 @@ def is_target(cmdline):
         return False
     elif engine == "JSC":
         return is_target_jsc(cmdline)
-    elif engine == "CH" :
-        return is_target_ch(cmdline)
     elif engine == "V8" :
         return True 
+
 def remove(l, e):
     try: 
         l.remove(e)
@@ -92,11 +72,19 @@ def rewrite(cmdline):
                 continue
             if "--no-call-graph-profile-sort" in arg:
                 continue
+            if "--crel" in arg:
+                continue
             new_cmdline.append(arg)
-    print(new_cmdline)
-
-
-    return new_cmdline
+        return new_cmdline+["-fuse-ld=lld"]
+    elif engine == "JSC":
+        for arg in cmdline:
+            if "Werror" in arg:
+                continue
+            if "section" in arg:
+                continue
+            new_cmdline.append(arg)
+        return new_cmdline
+    return cmdline
 
 if __name__ == '__main__':
     new_cmdline = sys.argv[:]
@@ -112,7 +100,9 @@ if __name__ == '__main__':
         new_cmdline[0] = compiler
 
     new_cmdline = rewrite(new_cmdline)
+    
     with open(os.path.join(ROOT, "proxy.log"), "a") as f:
         f.write(' '.join(new_cmdline) + "\n")
-        
+    # print(new_cmdline, flush=True)
+    
     os.execlp(new_cmdline[0], *new_cmdline)

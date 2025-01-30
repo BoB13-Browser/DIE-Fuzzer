@@ -18,5 +18,5 @@ fi
 
 
 tmux new-session -s fuzzer -d \
-        "./fuzz/scripts/run-all.py -- ./fuzz/afl/afl-fuzz -m none -o output \
+        "./fuzz/scripts/run-all.py -- ./fuzz/afl/afl-fuzz -m none -t 10000 -o output \
         "$1" ${libs} @@"
