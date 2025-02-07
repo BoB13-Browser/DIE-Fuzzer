@@ -8,11 +8,10 @@ import * as t from "@babel/types";
 
 import { Random, Pair, dbglog, DEBUG, assert, printf } from "./utils";
 import { TSNode, TypedAST } from "./esparse";
-import { st, SerializedTypes } from "./estypes";
+import { st, SerializedTypes, JSONType } from "./estypes";
 import * as MUTATOR from "./esmutator";
 import * as GENERATOR from "./esgenerator";
 import { lValPreference, complexPreference } from "./espreference";
-
 
 export class Code {
     path: string;
@@ -175,39 +174,39 @@ export class TestCase {
     private preMutate(path: NodePath<Node>) : void {
 
         let node: TSNode = <TSNode>path.node;
-        if (path.isFunction()) {
-            // I don't want to change function now.
-            this.nodes.set(<TSNode><t.BaseNode>path.node, 0);
+        // if (path.isFunction()) {
+        //     // I don't want to change function now.
+        //     this.nodes.set(<TSNode><t.BaseNode>path.node, 0);
 
-            if (path.isFunctionDeclaration()) {
+        //     if (path.isFunctionDeclaration()) {
 
-                // Function name is a type of declaration
-                this.nodes.set(<TSNode><t.BaseNode>path.node.id, -1);
+        //         // Function name is a type of declaration
+        //         this.nodes.set(<TSNode><t.BaseNode>path.node.id, -1);
 
-            } else if (path.isObjectMethod() || path.isClassMethod()) {
+        //     } else if (path.isObjectMethod() || path.isClassMethod()) {
 
-                // Do not mutate the static key of an object/class
-                let key : Node = path.node.key;
-                if (t.isIdentifier(key) || t.isLiteral(key)) {
-                    this.nodes.set(<TSNode><t.BaseNode>path.node, -1);
-                }
+        //         // Do not mutate the static key of an object/class
+        //         let key : Node = path.node.key;
+        //         if (t.isIdentifier(key) || t.isLiteral(key)) {
+        //             this.nodes.set(<TSNode><t.BaseNode>path.node, -1);
+        //         }
 
-            }
+        //     }
 
-            // Function Args are a type of declaration
-            for (let param of path.node.params)
-                this.nodes.set(<TSNode><t.BaseNode>param, -1);
-        }
+        //     // Function Args are a type of declaration
+        //     for (let param of path.node.params)
+        //         this.nodes.set(<TSNode><t.BaseNode>param, -1);
+        // }
 
-        else if (path.isVariableDeclarator()) {
-            // I don't want to change left value of declaration
-            this.nodes.set(<TSNode><unknown>path.node.id, -1);
-            // TODO How about right value?
-            // this.nodes.set(<TSNode><unknown>path.node.init, 0);
-        }
+        // if (path.isVariableDeclarator()) {
+        //     // I don't want to change left value of declaration
+        //     this.nodes.set(<TSNode><unknown>path.node.id, -1);
+        //     // TODO How about right value?
+        //     // this.nodes.set(<TSNode><unknown>path.node.init, 0);
+        // }
 
         // I don't want to mutate function call in global scope (i.e., main())
-        else if (path.isCallExpression() && t.isIdentifier(path.node.callee) 
+        if (path.isCallExpression() && t.isIdentifier(path.node.callee) 
                     && path.scope.hasOwnBinding(path.node.callee.name) 
                     && t.isProgram(path.scope.block)) {
             this.nodes.set(<TSNode><t.BaseNode>path.node, 0);
@@ -254,12 +253,12 @@ export class TestCase {
         }
 
         /// do not mutate ObjectProperty's key if its string or id (e.g., { 'e' : 1 }'s e)
-        else if (path.isObjectProperty()) {
-            let key : Node = path.node.key;
-            if (t.isIdentifier(key) || t.isLiteral(key)) {
-                this.nodes.set(<TSNode><t.BaseNode>path.node.key, -1);
-            }
-        }
+        // else if (path.isObjectProperty()) {
+        //     let key : Node = path.node.key;
+        //     if (t.isIdentifier(key) || t.isLiteral(key)) {
+        //         this.nodes.set(<TSNode><t.BaseNode>path.node.key, -1);
+        //     }
+        // }
 
         /// for RestElement, we only replace the argument with LVal
         /// ???: we do not mutate RestElement itself
@@ -354,7 +353,12 @@ export class TestCase {
             case MUTATOR.MUTATE_NODE:
                 let oldNode: TSNode = change.old;
                 let newNode: TSNode = change.new;
-                assert(!!newNode);
+                // assert(!!newNode);
+                // 새 노드가 falsy하면, replaceWith 대신 remove() 호출
+                if (!newNode) {
+                    path.remove();
+                    break;
+                }
                 if (oldNode === newNode)
                     return;
 
@@ -390,6 +394,7 @@ export class TestCase {
     }
 
     public mutate(): void {
+        // console.log("[mutate] Starting");
         this.curNodesMap = new Map(this.nodes); // make a copy of the weighted node map
 
         let mutateMax: number = Math.floor(this.nodes.size / 5);
@@ -398,14 +403,43 @@ export class TestCase {
         if (mutateMax < this.MUTATE_MIN)
             mutateMax = this.MUTATE_MIN;
         
+        // console.log("[mutate] 1");
       	let n: number = Random.range(this.MUTATE_MIN, mutateMax);
+        // let n = 15;
+        // console.log("[mutate] n =", n);
+        // 디버그: 후보 노드 목록 확인
+        // const candidates = Random.weightedMap(this.curNodesMap);
+        // console.log("[mutate] Candidate count =", candidates.length);
+        // fs.appendFileSync("log.json", JSON.stringify(candidates));
+        // console.log("[mutate] Candidate count =", candidates);
+        // console.log("\n\n\n\n");
+        // console.log("[mutate] candidates 39 =", candidates[39]);
+        // console.log("\n\n");
         for (let i = 0; i < n; i++) {
             let node: TSNode = Random.pick(Random.weightedMap(this.curNodesMap));
             if (!node)
                 break;
+
+            // console.log("[mutate] 2");
+            // let node: TSNode = Random.pick(candidates);
+            // let node : TSNode = candidates[25];
+            // let node : TSNode = candidates[62];
+            // let node : TSNode = candidates[109];
+            // let node : TSNode = candidates[146];
+            // if (!node) {
+            //     console.log("[mutate] No candidate node found, breaking the loop\n");
+            //     break;
+            // }
+            // console.log("[mutate] 3");
+            
             let path: NodePath = this.paths.get(node);
+            // console.log("[mutate] node =", node);
+            // console.log("\n\n\n\n");
+            // console.log("[mutate] path =", path);
+            // console.log("\n\n\n\n");
             let change: MUTATOR.MutateChange = null;
             try {
+                // console.log("[mutate] 4");
                 change = MUTATOR.mutate(this, path);
             } catch (e) {
                 if (DEBUG)
@@ -521,7 +555,12 @@ export class TestCase {
         for (let rm of this.removed) {
             let path: NodePath = rm.first;
             let node: TSNode = rm.second;
-            path.replaceWith(<Node>node);
+            // path.replaceWith(<Node>node);
+            if (!node) {
+                path.remove();
+            } else {
+                path.replaceWith(<Node>node);
+            }
         }
 
         for (let opc of this.opchanged) {

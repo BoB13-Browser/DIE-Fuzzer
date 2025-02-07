@@ -37,12 +37,18 @@ function main() {
 
     tc.config(4, 8, 2, 1);
     builder.config(2, 2);
+    // tc.writeToFile(fpath, seed, true);
+    // tc.revert();
+    // return;
 
     for (let i = 0; i < cnt; i++) {
 
         // for each test case, we reset the var cnt
         builder.setVarCnt(tast.maxVarCnt);
         let _fpath: string = dpath + "/" + i + ".js";
+        // tc.mutate();
+        // tc.writeToFile(_fpath, seed, true);
+        // tc.revert();
         switch(Random.number(3)) {
             case 0:
             case 1:
@@ -58,6 +64,7 @@ function main() {
         }
 
    }
+   
 
 }
 

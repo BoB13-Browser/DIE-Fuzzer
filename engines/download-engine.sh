@@ -3,7 +3,7 @@
 # check webkit latest here: https://webkitgtk.org/releases/
 
 if [ -z $1 ] ; then
-  echo "usage: $0 <engines> (engines : ch, jsc, v8, sm, hm)"
+  echo "usage: $0 <engines> (engines : ch, jsc, v8, sm, hm, jy)"
 fi
 
 if [ "$1" = "jsc" ] ; then
@@ -20,4 +20,6 @@ elif [ "$1" = "sm" ]; then
   git clone https://github.com/mozilla/gecko-dev.git
 elif [ "$1" = "hm" ]; then
   git clone https://github.com/facebook/hermes.git hermes-master
+elif [ "$1" = "jy" ]; then
+  git clone https://github.com/jerryscript-project/jerryscript.git
 fi
