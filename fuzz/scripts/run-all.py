@@ -15,4 +15,4 @@ if __name__ == '__main__':
     assert('output' in cmd)
     for i in range(p.parse_args().cpu):
         new_cmd = ' '.join(cmd).replace('output', 'output-%d' % i)
-        os.system('tmux new-window -n jsfuzz-%d "AFL_NO_UI=1 REDIS_URL=redis://localhost:9000 %s; /bin/bash"' % (i, new_cmd))
+        os.system('tmux new-window -n jsfuzz-%d "REDIS_URL=redis://localhost:9000 %s; /bin/bash"' % (i, new_cmd))

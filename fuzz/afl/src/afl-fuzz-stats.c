@@ -642,6 +642,7 @@ static void check_term_size(afl_state_t *afl) {
 
 void show_stats(afl_state_t *afl) {
 
+  afl->force_ui_update = 1;
   if (afl->pizza_is_served) {
 
     show_stats_pizza(afl);
@@ -698,7 +699,6 @@ void show_stats_normal(afl_state_t *afl) {
 
   if (cur_ms - afl->stats_last_ms < 1000 / UI_TARGET_HZ &&
       !afl->force_ui_update) {
-
     return;
 
   }
@@ -855,11 +855,11 @@ void show_stats_normal(afl_state_t *afl) {
 
   /* If we're not on TTY, bail out. */
 
-  if (afl->not_on_tty) { return; }
+  //if (afl->not_on_tty) { return; }
 
   /* If we haven't started doing things, bail out. */
 
-  if (unlikely(!afl->queue_cur)) { return; }
+  //if (unlikely(!afl->queue_cur)) { return; }
 
   /* Compute some mildly useful bitmap stats. */
 
@@ -1082,15 +1082,29 @@ void show_stats_normal(afl_state_t *afl) {
      together, but then cram them into a fixed-width field - so we need to
      put them in a temporary buffer first. */
 
+  // sprintf(tmp, "%s%s%u (%0.01f%%)", u_stringify_int(IB(0), afl->current_entry),
+  //         afl->queue_cur->favored ? "." : "*", afl->queue_cur->fuzz_level,
+  //         ((double)afl->current_entry * 100) / afl->queued_items);
+
+  // SAYF(bV bSTOP "  now processing : " cRST "%-18s " bSTG bV bSTOP, tmp);
+
+  // sprintf(tmp, "%0.02f%% / %0.02f%%",
+  //         ((double)afl->queue_cur->bitmap_size) * 100 / afl->fsrv.real_map_size,
+  //         t_byte_ratio);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
   sprintf(tmp, "%s%s%u (%0.01f%%)", u_stringify_int(IB(0), afl->current_entry),
-          afl->queue_cur->favored ? "." : "*", afl->queue_cur->fuzz_level,
+          "*", 0,
           ((double)afl->current_entry * 100) / afl->queued_items);
 
   SAYF(bV bSTOP "  now processing : " cRST "%-18s " bSTG bV bSTOP, tmp);
 
+  memset(tmp, 0, sizeof(tmp));
   sprintf(tmp, "%0.02f%% / %0.02f%%",
-          ((double)afl->queue_cur->bitmap_size) * 100 / afl->fsrv.real_map_size,
+          0.1,
           t_byte_ratio);
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
   SAYF("    map density : %s%-19s" bSTG bV "\n",
        t_byte_ratio > 70

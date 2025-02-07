@@ -6221,7 +6221,7 @@ u8 fuzz_one(afl_state_t *afl) {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 int execute_sh(char* cmd) {
-  ACTF("Command: %s", cmd);
+  //ACTF("Command: %s", cmd);
   return system(cmd);
 
 }
@@ -6238,7 +6238,7 @@ s32 generate_js(afl_state_t *afl, u8 *own_loc, u8* cur_input, u8* tmp_outdir) {
   cmdline = alloc_printf("timeout 30 node %s/esfuzz.js %s %s %d %u > /dev/null",
                           ts_dir, cur_input, tmp_outdir, cnt, seed);
 
-  ACTF("Generating testcases...");
+  //ACTF("Generating testcases...");
   status = execute_sh(cmdline);
 
   ck_free(ts_dir);
@@ -6248,15 +6248,21 @@ s32 generate_js(afl_state_t *afl, u8 *own_loc, u8* cur_input, u8* tmp_outdir) {
 
 s32 fuzz_dir(char* input_dir, afl_state_t *afl) {
   if (afl->own_loc == NULL) FATAL("afl->own_loc == NULL??");
-  afl->stage_name  = "javascript";
-  afl->stage_short = "js";
+  if (afl->in_dir) {
+    afl->stage_name = "js population";
+    afl->stage_short = "pop";
+  }
+  else {
+    afl->stage_name = "js fuzz";
+    afl->stage_short = "fuzz";
+  }
   afl->stage_cur   = 0;
-
+  afl->stage_max = 0;
   struct dirent **nl;
   u8 *mem;
   s32 nl_cnt, fd;
   u32 i, len;
-  ACTF("Scanning '%s'...", input_dir);
+  //ACTF("Scanning '%s'...", input_dir);
 
   /* We use scandir() + alphasort() rather than readdir() because otherwise,
      the ordering  of test cases would vary somewhat randomly and would be
@@ -6264,8 +6270,18 @@ s32 fuzz_dir(char* input_dir, afl_state_t *afl) {
 
   nl_cnt = scandir(input_dir, &nl, NULL, alphasort);
 
-  afl->stage_max   = nl_cnt;
+  for(i=0;i<nl_cnt;i++) {
+    struct stat st;
+    u8* fn = alloc_printf("%s/%s", input_dir, nl[i]->d_name);
+    if (lstat(fn, &st) || access(fn, R_OK))
+      PFATAL("Unable to access '%s'", fn);
 
+    u32 fn_len = strlen(fn);
+    if (fn_len<3 || fn[fn_len - 3] != '.' || fn[fn_len - 2] != 'j' || fn[fn_len - 1] != 's') continue;
+    afl->stage_max++;
+    ck_free(fn);
+  }
+  show_stats(afl);
 
   if (nl_cnt < 0)
     PFATAL("Unable to open '%s'", input_dir);
@@ -6307,7 +6323,7 @@ s32 fuzz_dir(char* input_dir, afl_state_t *afl) {
 
     // Debug for corpus
     if (afl->in_dir) {
-      ACTF("Checking corpus: %s", fn);
+      //ACTF("Checking corpus: %s", fn);
       // ACTF("%s\n", mem);
     }
 
@@ -6341,7 +6357,7 @@ s32 fuzz_dir(char* input_dir, afl_state_t *afl) {
     afl->total_cal_cycles++;
 
   }
-  ACTF("CHECK CORPUS DONE");
+  //ACTF("CHECK CORPUS DONE");
   afl->current_fn = NULL;
   free(nl); /* not tracked */
   return nl_cnt;

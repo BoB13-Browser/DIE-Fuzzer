@@ -1983,7 +1983,7 @@ fsrv_run_result_t __attribute__((hot)) afl_fsrv_run_target(
     FATAL("Fork server is misbehaving (OOM?)");
 
   }
-  // ACTF("fsrv pid: %u, child pid: %u", fsrv->fsrv_pid, fsrv->child_pid);
+  //ACTF("fsrv pid: %u, child pid: %u", fsrv->fsrv_pid, fsrv->child_pid);
   if (unlikely(fsrv->late_send)) {
 
     fsrv->late_send(fsrv->custom_data_ptr, fsrv->custom_input,
@@ -2110,7 +2110,7 @@ fsrv_run_result_t __attribute__((hot)) afl_fsrv_run_target(
     }
 
 #endif
-    ACTF("child_status: %d, crash_exitcode: %d, last_kill_signal: %d", fsrv->child_status, fsrv->crash_exitcode, fsrv->last_kill_signal);
+    //ACTF("child_status: %d, crash_exitcode: %d, last_kill_signal: %d", fsrv->child_status, fsrv->crash_exitcode, fsrv->last_kill_signal);
     return FSRV_RUN_CRASH;
 
   }

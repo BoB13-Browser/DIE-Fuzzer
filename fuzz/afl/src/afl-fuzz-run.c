@@ -1193,7 +1193,6 @@ u8 __attribute__((hot)) common_fuzz_stuff(afl_state_t *afl, u8 *out_buf,
   }
 
   fault = fuzz_run_target(afl, &afl->fsrv, afl->fsrv.exec_tmout);
-  // ACTF("skip_requested: %d, fault: %d", afl->skip_requested, fault);
 
   if (afl->stop_soon) { return 1; }
 
@@ -1214,6 +1213,7 @@ u8 __attribute__((hot)) common_fuzz_stuff(afl_state_t *afl, u8 *out_buf,
 
   /* Users can hit us with SIGUSR1 to request the current input
      to be abandoned. */
+  //ACTF("skip_requested: %d, fault: %d", afl->skip_requested, fault);
   if (afl->skip_requested) {
 
     afl->skip_requested = 0;
@@ -1226,12 +1226,12 @@ u8 __attribute__((hot)) common_fuzz_stuff(afl_state_t *afl, u8 *out_buf,
 
   afl->queued_discovered += save_if_interesting(afl, out_buf, len, fault);
 
-  if (!(afl->stage_cur % afl->stats_update_freq) ||
-      afl->stage_cur + 1 == afl->stage_max) {
+  //if (!(afl->stage_cur % afl->stats_update_freq) ||
+  //    afl->stage_cur + 1 == afl->stage_max) {
 
     show_stats(afl);
 
-  }
+  //}
 
   return 0;
 

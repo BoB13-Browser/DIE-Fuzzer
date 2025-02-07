@@ -1894,28 +1894,28 @@ static void handle_existing_out_dir(afl_state_t *afl) {
 
     /* Let's see how much work is at stake. */
 
-    if (!afl->in_place_resume && last_update > start_time2 &&
-        last_update - start_time2 > OUTPUT_GRACE * 60) {
+    //if (!afl->in_place_resume && last_update > start_time2 &&
+    //    last_update - start_time2 > OUTPUT_GRACE * 60) {
+    //
+    //  SAYF("\n" cLRD "[-] " cRST
+    //       "The job output directory already exists and contains the results "
+    //       "of more\n"
+    //       "    than %d minutes worth of fuzzing. To avoid data loss, afl-fuzz "
+    //       "will *NOT*\n"
+    //       "    automatically delete this data for you.\n\n"
+    //
+    //       "    If you wish to start a new session, remove or rename the "
+    //       "directory manually,\n"
+    //       "    or specify a different output location for this job. To resume "
+    //       "the old\n"
+    //       "    session, pass '-' as input directory in the command line ('-i "
+    //       "-')\n"
+    //       "    or set the 'AFL_AUTORESUME=1' env variable and try again.\n",
+    //       OUTPUT_GRACE);
+    //
+    //  FATAL("At-risk data found in '%s'", afl->out_dir);
 
-      SAYF("\n" cLRD "[-] " cRST
-           "The job output directory already exists and contains the results "
-           "of more\n"
-           "    than %d minutes worth of fuzzing. To avoid data loss, afl-fuzz "
-           "will *NOT*\n"
-           "    automatically delete this data for you.\n\n"
-
-           "    If you wish to start a new session, remove or rename the "
-           "directory manually,\n"
-           "    or specify a different output location for this job. To resume "
-           "the old\n"
-           "    session, pass '-' as input directory in the command line ('-i "
-           "-')\n"
-           "    or set the 'AFL_AUTORESUME=1' env variable and try again.\n",
-           OUTPUT_GRACE);
-
-      FATAL("At-risk data found in '%s'", afl->out_dir);
-
-    }
+    //}
 
   }
 

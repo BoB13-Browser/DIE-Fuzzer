@@ -473,8 +473,8 @@ void write_coverage_diff(afl_state_t *afl) {
 u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
                                             u32 len, u8 fault) {
                                             
-  // ACTF("save_if_intersting called!");
-  if (unlikely(len == 0)) { ACTF("I THINK THIS IS NOT GOOD...");return 0; }
+  //ACTF("save_if_intersting called!");
+  //if (unlikely(len == 0)) { ACTF("I THINK THIS IS NOT GOOD...");return 0; }
 
   if (unlikely(fault == FSRV_RUN_TMOUT && afl->afl_env.afl_ignore_timeouts)) {
 
@@ -488,7 +488,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
         afl->n_fuzz[cksum % N_FUZZ_SIZE]++;
 
     }
-    ACTF("I THINK THIS IS NOT GOOD...");
+    //ACTF("I THINK THIS IS NOT GOOD...");
     return 0;
 
   }
@@ -530,18 +530,21 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
     if (likely(classified)) {
 
       new_bits = has_new_bits(afl, afl->virgin_bits);
+
     } else {
+
       new_bits = has_new_bits_unclassified(afl, afl->virgin_bits);
 
       if (unlikely(new_bits)) { classified = 1; }
 
     }
+
     if (likely(!new_bits)) {
+
       if (unlikely(afl->crash_mode)) { ++afl->total_crashes; }
       return 0;
 
     }
-
 /////////////////////////////////////////////////////////////////////////////////////////////////
     if (afl->in_dir) {
       // Check for updating global coverage,
@@ -551,12 +554,12 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
     else {
       if (!(hnb = has_new_bits(afl, afl->virgin_bits))) {
         if (afl->crash_mode) afl->total_crashes++;
-        return 0;
+        //return 0;
       }
 
       globally_sync(afl, false);
       if (!(hnb = has_new_bits(afl, afl->virgin_bits))) {
-        return 0;
+        //return 0;
       }
     }
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -591,14 +594,13 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
         afl->file_extension ? (const char *)afl->file_extension : "");
 
 #endif                                                    /* ^!SIMPLE_FILES */
+    // fd = permissive_create(afl, queue_fn);
+    // if (likely(fd >= 0)) {
 
-    fd = permissive_create(afl, queue_fn);
-    if (likely(fd >= 0)) {
+    //   ck_write(fd, mem, len, queue_fn);
+    //   close(fd);
 
-      ck_write(fd, mem, len, queue_fn);
-      close(fd);
-
-    }
+    // }
 
     add_to_queue(afl, queue_fn, len, 0);
 
@@ -643,6 +645,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
     }
 
 #endif
+
     if (new_bits == 2) {
 
       afl->queue_top->has_new_cov = 1;
@@ -668,6 +671,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
       afl->n_fuzz[afl->queue_top->n_fuzz_entry] = 1;
 
     }
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
     /* Try to calibrate inline; this also calls update_bitmap_score() when
        successful. */
@@ -686,7 +690,7 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
     }
 /////////////////////////////////////////////////////////////////////////////////////////////////
     write_coverage_diff(afl);
-    ACTF("Insert a new path: %s", afl->current_fn);
+    //ACTF("Insert a new path: %s", afl->current_fn);
 
     cmdline = alloc_printf("node %s/../TS/redis_ctrl.js"
           " insertPath %s %s/.cov_diff", afl->own_loc, afl->current_fn, afl->out_dir);
@@ -698,6 +702,8 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
 
   }
 
+
+  
   switch (fault) {
 
     case FSRV_RUN_TMOUT:
@@ -1010,5 +1016,4 @@ u8 __attribute__((hot)) save_if_interesting(afl_state_t *afl, void *mem,
   return keeping;
 
 }
-
 

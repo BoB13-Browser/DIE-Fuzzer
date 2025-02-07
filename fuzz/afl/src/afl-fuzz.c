@@ -541,13 +541,13 @@ static void set_own_loc(afl_state_t *afl, char *argv0) {
 
   u8 *rsl;
   afl->own_loc = ck_strdup(argv0);
-  ACTF("before afl->own_loc: %s", afl->own_loc);
+  //ACTF("before afl->own_loc: %s", afl->own_loc);
   rsl = strrchr(afl->own_loc, '/');
   if (rsl)
     *rsl = 0;
   else
     FATAL("Unable to find '/' in argv0: %s", argv0);
-  ACTF("after afl->own_loc: %s", afl->own_loc);
+  //ACTF("after afl->own_loc: %s", afl->own_loc);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ int main(int argc, char **argv_orig, char **envp) {
   afl_state_t *afl = calloc(1, sizeof(afl_state_t));
   if (!afl) { FATAL("Could not create afl state"); }
 
-  ACTF("argv: %s %s", argv_orig[0], argv_orig[1]);
+  //ACTF("argv: %s %s", argv_orig[0], argv_orig[1]);
   set_own_loc(afl, argv_orig[0]);
   if (get_afl_env("AFL_DEBUG")) { debug = afl->debug = 1; }
 
@@ -2703,7 +2703,7 @@ int main(int argc, char **argv_orig, char **envp) {
   }
 
   load_auto(afl);
-  ACTF("LOAD AUTO COMPLETE");
+  //ACTF("LOAD AUTO COMPLETE");
   if (extras_dir_cnt) {
 
     for (u8 i = 0; i < extras_dir_cnt; i++) {
@@ -2844,7 +2844,7 @@ int main(int argc, char **argv_orig, char **envp) {
   }
 
   cull_queue(afl);
-  ACTF("CULL QUEUE COMPLETE");
+  //ACTF("CULL QUEUE COMPLETE");
   /////////////////////////////////////////////////////////////////////////////////////////////////
   // ensure we have at least one seed that is not disabled.
   // u32 entry, valid_seeds = 0;
@@ -2918,7 +2918,7 @@ int main(int argc, char **argv_orig, char **envp) {
   /////////////////////////////////////////////////////////////////////////////////////////////////
   set_own_loc(afl, argv_orig[0]);
   if (afl->in_dir) {
-    ACTF("It seems that This is for population!");
+    //ACTF("It seems that This is for population!");
     fuzz_dir(afl->in_dir, afl);
     goto stop_fuzzing;
   }

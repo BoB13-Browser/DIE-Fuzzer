@@ -1491,13 +1491,15 @@ static u8 fuzz_js(afl_state_t *afl) {
   u64 gen_time, fuzz_time;
 
   // Generate test cases in fuzz_inputs
+  afl->stage_name = "Generating";
+  show_stats(afl);
   fuzz_inputs_dir = alloc_printf("%s/fuzz_inputs", afl->out_dir);
   cur_input = alloc_printf("%s/.cur_input.js", afl->out_dir);
 
   cmdline = alloc_printf("node %s/../TS/redis_ctrl.js getNextTestcase %s",
       afl->own_loc, cur_input);
 
-  ACTF("Get a next testcase");
+  //ACTF("Get a next testcase");
 
   execute_sh(cmdline);
 
@@ -1514,9 +1516,9 @@ static u8 fuzz_js(afl_state_t *afl) {
   nl_cnt = fuzz_dir(fuzz_inputs_dir, afl);
   fuzz_time = get_cur_time() - fuzz_time;
 
-  ACTF("Time - Generation: %0.02f ea/s, Execution: %0.02f ea/s\n",
-      (double)(nl_cnt) / (gen_time / 1000),
-      (double)(nl_cnt) / (fuzz_time / 1000));
+  // ACTF("Time - Generation: %0.02f ea/s, Execution: %0.02f ea/s\n",
+  //    (double)(nl_cnt) / (gen_time / 1000),
+  //    (double)(nl_cnt) / (fuzz_time / 1000));
 
 //out:
   ck_free(cmdline);
